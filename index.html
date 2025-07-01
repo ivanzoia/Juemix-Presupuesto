@@ -4,99 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presupuesto Juemix</title>
-<style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #99a6c1;
-      padding: 30px;
-    }
-
-    h2 {
-      color: #000;
-      text-align: center;
-    }
-
-    label, input, textarea, button {
-      margin: 5px;
-    }
-
-    input, textarea {
-      padding: 4px;
-      width: 220px;
-    }
-
-    textarea {
-      resize: vertical;
-      height: 60px;
-    }
-
-    button {
-      padding: 6px 12px;
-      cursor: pointer;
-      background-color: #0c7777;
-      color: white;
-      border: none;
-      border-radius: 5px;
-    }
-
-    table {
-      width: 100%;
-      table-layout: fixed;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-
-    th, td {
-      border: 1px solid #999;
-      padding: 8px;
-      text-align: left;
-      word-wrap: break-word;
-    }
-
-    th:nth-child(1), td:nth-child(1) { width: 40%; }
-    th:nth-child(2), td:nth-child(2) { width: 15%; }
-    th:nth-child(3), td:nth-child(3) { width: 20%; }
-    th:nth-child(4), td:nth-child(4) { width: 25%; }
-
-    #contenidoPresupuesto {
-      padding: 20px;
-      background-color: #f5e9d4;
-      border-radius: 10px;
-      box-shadow: 0 0 5px #0000001a;
-    }
-
-    #formularioCarga {
-      margin-bottom: 20px;
-    }
-    #presupuestoCompleto {
-      width: 100%;      /* A4 width */
-      min-height: auto; /* A4 height */
-      padding: 10mm;
-      background-color: #f5e9d4;
-      box-sizing: border-box;
-    }
-    .soloPantalla {
-  display: block;
-}
-
-.soloPDF {
-  display: none;
-}
-
-/* Al preparar el PDF: ocultar textarea y mostrar solo el texto */
-@media print {
-  .soloPantalla {
-    display: none !important;
-  }
-  .soloPDF {
-    display: block !important;
-  }
-}
-</style>
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
 
-  <!-- 🧾 FORMULARIO (no va al PDF) -->
   <div id="formularioCarga">
     <label>Descripción:</label>
     <input type="text" id="descripcion">
@@ -107,9 +18,9 @@
     <button onclick="agregarItem()">Agregar ítem</button>
   </div>
 
-  <!-- 📦 CONTENIDO QUE VA EN EL PDF -->
+  <!-- lo que va en el pdf -->
   <div id="presupuestoCompleto">
-    <!-- Encabezado con logo y título -->
+   
     <div style="display: flex; align-items: center; margin-bottom: 10px; background-color: #d2691e; border-radius: 10px;">
       <img src="isologo juemix.webp" alt="Logo Juemix" style="height: 100px; margin: 15px;">
       <h2 style="margin-left: 10px;">Presupuesto Juemix</h2>
@@ -119,13 +30,12 @@
       <p><strong>Emitido:</strong> <span id="fechaEmision"></span></p>
       <p><strong>Válido por 96 hs</strong></p>
 
-      <!-- Descripción general del trabajo -->
+      <!-- descripcion -->
       <div>
         <textarea id="descripcionTrabajo" class="soloPantalla" oninput="actualizarDescripcion()"></textarea>
         <p id="textoDescripcionTrabajo" class="soloPDF"></p>
       </div>
 
-      <!-- Tabla de ítems -->
       <table id="tabla">
         <thead>
           <tr>
@@ -134,88 +44,18 @@
             <th>Precio Unitario</th>
             <th>Subtotal</th>
           </tr>
-        </thead>
+        </thead> 
         <tbody></tbody>
       </table>
 
       <h3>Total: $<span id="total">0.00</span></h3>
     </div>
   </div>
-
-  <!-- 📥 BOTÓN DE DESCARGA -->
-  <br>
+   <br>
   <button onclick="descargarPDF()">Descargar PDF</button>
-
+  
   <!-- html2pdf.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-  <script>
-    const tbody = document.querySelector("tbody");
-    let total = 0;
-
-    function agregarItem() {
-      const desc = document.getElementById("descripcion").value;
-      const cant = parseInt(document.getElementById("cantidad").value);
-      const precio = parseFloat(document.getElementById("precio").value);
-
-      if (!desc || isNaN(cant) || isNaN(precio)) {
-        alert("Complete todos los campos.");
-        return;
-      }
-
-      const subtotal = cant * precio;
-      total += subtotal;
-
-      const fila = `<tr>
-                      <td>${desc}</td>
-                      <td>${cant}</td>
-                      <td>$${precio.toFixed(2)}</td>
-                      <td>$${subtotal.toFixed(2)}</td>
-                    </tr>`;
-      tbody.innerHTML += fila;
-      document.getElementById("total").textContent = total.toFixed(2);
-
-      document.getElementById("descripcion").value = "";
-      document.getElementById("cantidad").value = "";
-      document.getElementById("precio").value = "";
-    }
-
-    function calcularFechas() {
-      const hoy = new Date();
-      document.getElementById("fechaEmision").textContent = hoy.toLocaleString();
-    }
-
-    function actualizarDescripcion() {
-      const texto = document.getElementById("descripcionTrabajo").value;
-      document.getElementById("textoDescripcionTrabajo").textContent = texto;
-    }
-
- function descargarPDF() {
-  actualizarDescripcion();
-
-  // Mostrar soloPDF y ocultar soloPantalla
-  document.querySelector(".soloPantalla").style.display = "none";
-  document.querySelector(".soloPDF").style.display = "block";
-
-  const element = document.getElementById("presupuestoCompleto");
-
-  const opt = {
-    margin:       0,
-    filename:     'Presupuesto_Juemix.pdf',
-    image:        { type: 'jpeg', quality: 1 },
-    html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-  };
-
-  html2pdf().set(opt).from(element).save().then(() => {
-    // Restaurar la vista después de la descarga
-    document.querySelector(".soloPantalla").style.display = "block";
-    document.querySelector(".soloPDF").style.display = "none";
-  });
-}
-
-    calcularFechas();
-  </script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+ <script src="./index.js"></script>
 </body>
 </html>
